@@ -3,7 +3,6 @@ function markerSize(magnitude) {
   return magnitude*15000;
 }
 
-
 // Set up color choice function
 function markerColor(magnitude) {
   if (magnitude < 1) {
@@ -16,10 +15,10 @@ function markerColor(magnitude) {
     return "yellow";
   }
   else if (magnitude < 4) {
-    return "gold";
+    return "orange";
   }
   else if (magnitude < 5) {
-    return "orange";
+    return "salmon";
   }
   else {
     return "crimson";
@@ -41,14 +40,18 @@ function createCircleMarker( feature, latlng ){
   return L.circle( latlng, options );
 }
 
-// url to grab earthquake data
-var url = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_week.geojson"
+// url to grab earthquake & fault lines data
+var earthquakeURL = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_week.geojson"
+var faultlinesURL = "https://raw.githubusercontent.com/fraxen/tectonicplates/master/GeoJSON/PB2002_boundaries.json"
 
-// perform a d3 get request to the url
-d3.json(url, function(data) {
+
+
+// perform a d3 get request to the earthquakes url
+d3.json(earthquakeURL, function(data) {
   // Once we get a response, send the data.features object to the createFeatures function
   createFeatures(data.features);
 })
+
 
 function createFeatures(earthquakeData) {
 
@@ -101,7 +104,8 @@ function createMap(earthquakes) {
 
   // Create overlay object to hold our overlay layer
   var overlayMaps = {
-    Earthquakes: earthquakes
+    Earthquakes: earthquakes,
+    "Fault Lines": earthquakes,
   };
 
   // Create our map, giving it the streetmap and earthquakes layers to display on load
@@ -126,7 +130,7 @@ function createMap(earthquakes) {
 
     var div = L.DomUtil.create('div', 'info legend'),
         limits = [0, 1, 2, 3, 4, 5],
-        colors = ["lightgreen","greenyellow","yellow","gold","orange","crimson"],
+        colors = ["lightgreen","greenyellow","yellow","orange","salmon","crimson"],
         labels = [];
 
     // Add min & max
