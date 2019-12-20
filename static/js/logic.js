@@ -45,15 +45,24 @@ var earthquakeURL = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/a
 var faultlinesURL = "https://raw.githubusercontent.com/fraxen/tectonicplates/master/GeoJSON/PB2002_boundaries.json"
 
 
-
 // perform a d3 get request to the earthquakes url
 d3.json(earthquakeURL, function(data) {
   // Once we get a response, send the data.features object to the createFeatures function
-  createFeatures(data.features);
+  var earthquakeData = data.features;
+
+
+  // perform a d3 get request to the faultlines url
+  d3.json(faultlinesURL, function(data) {
+    // Once we get a response, send the data.features object to the createFeatures function
+    var faultlineData = data.features;
+
+    //send each data object to create features function
+    createFeatures(earthquakeData, faultlineData);
+  })
 })
 
 
-function createFeatures(earthquakeData) {
+function createFeatures(earthquakeData, faultlineData) {
 
   // Define a function we want to run once for each feature in the features array
   // Give each feature a popup describing the place and time of the earthquake
@@ -69,11 +78,18 @@ function createFeatures(earthquakeData) {
     pointToLayer: createCircleMarker
   });
 
-  // Sending our earthquakes layer to the createMap function
-  createMap(earthquakes);
+  // Create a GeoJSON layer containing the features array on the faultlineData object
+  // Run the onEachFeature function once for each piece of data in the array
+  var faultlines = L.geoJSON(faultlineData, {
+    onEachFeature: onEachFeature,
+    pointToLayer: createCircleMarker
+  });
+
+  // Sending our earthquakes & faultlines layer to the createMap function
+  createMap(earthquakes, faultlines);
 }
 
-function createMap(earthquakes) {
+function createMap(earthquakes, faultlines) {
 
   // Define graymap, streetmap and darkmap layers
   var graymap = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
@@ -105,7 +121,7 @@ function createMap(earthquakes) {
   // Create overlay object to hold our overlay layer
   var overlayMaps = {
     Earthquakes: earthquakes,
-    "Fault Lines": earthquakes,
+    "Fault Lines": faultlines,
   };
 
   // Create our map, giving it the streetmap and earthquakes layers to display on load
